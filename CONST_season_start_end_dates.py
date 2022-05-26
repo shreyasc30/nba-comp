@@ -25,6 +25,9 @@ SEASON_START_END_DATES = {
     '2015-16': (datetime.date(2015, 10, 27), datetime.date(2016, 4, 13)),
     '2016-17': (datetime.date(2016, 10, 25), datetime.date(2017, 4, 12)),
     '2017-18': (datetime.date(2017, 10, 17), datetime.date(2018, 4, 11)),
-    '2018-19': (datetime.date(2018, 10, 16), datetime.date(2019, 4, 10))
+    '2018-19': (datetime.date(2018, 10, 16), datetime.date(2019, 4, 10)),
+    '2019-20': (datetime.date(2019, 10, 22), datetime.date(2020, 3, 11)),    # ignored post-pandemic season due to player availability issues and environment change / time difference
+    '2020-21': (datetime.date(2020, 12, 22), datetime.date(2021, 5, 16)),
+    '2021-22': (datetime.date(2021, 10, 19), datetime.date(2019, 4, 10))
 
 }

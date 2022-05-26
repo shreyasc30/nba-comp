@@ -1,6 +1,8 @@
 import datetime
 # NBA timings inclusive of opening and closing days
 # necessary due to multiple lockout
+
+# UPDATED 2022-05-25 to current season, also necessary due to COVID
 SEASON_START_END_DATES = {
 
     '1996-97': (datetime.date(1996, 11, 1), datetime.date(1997, 4, 20)),
@@ -28,6 +30,6 @@ SEASON_START_END_DATES = {
     '2018-19': (datetime.date(2018, 10, 16), datetime.date(2019, 4, 10)),
     '2019-20': (datetime.date(2019, 10, 22), datetime.date(2020, 3, 11)),    # ignored post-pandemic season due to player availability issues and environment change / time difference
     '2020-21': (datetime.date(2020, 12, 22), datetime.date(2021, 5, 16)),
-    '2021-22': (datetime.date(2021, 10, 19), datetime.date(2019, 4, 10))
+    '2021-22': (datetime.date(2021, 10, 19), datetime.date(2022, 4, 10))
 
 }

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from time import sleep
 
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.options import Options
@@ -15,17 +16,18 @@ CONST_URL = "https://www.nba.com/stats/gamebooks/?Date="
 
 opts = Options()
 # toggle the below to see / not see the browser carrying out transactions -- makes things longer if off, but good for testing
-#opts.headless = True
+opts.headless = True
 browser = Firefox(options=opts)
 
 def iterate_single_season(season_string, df):
+    game_urls = []
     if season_string not in SEASON_START_END_DATES.keys():
         raise ValueError("Specified year start/end dates could not be found: " + season_string)
     (start_date, end_date) = SEASON_START_END_DATES.get(season_string)
 
     curr_date = start_date
 
-    print(curr_date.strftime('%d'))
+    # print(curr_date.strftime('%d'))
 
     while curr_date < end_date:
         # do some actions with the current date
@@ -35,7 +37,9 @@ def iterate_single_season(season_string, df):
         url = CONST_URL + curr_date.strftime('%m') + "%2F" + curr_date.strftime('%d') + "%2F" + curr_date.strftime('%Y')
 
         # business logic happens here
-        df = iterate_single_gameday(season_string, url, df)
+        game_urls = get_single_gameday_urls(season_string, url, game_urls)
+        print(game_urls)
+        break
         
 
         # increment the day
@@ -46,7 +50,7 @@ def iterate_single_season(season_string, df):
 # df is dataframe to which we want to add each data entry
 # single gameday refers to a single date
 
-def iterate_single_gameday(season_string, url, df):
+def get_single_gameday_urls(season_string, url, game_urls):
     browser.get(url)
     # nba table is always before G league table on the page
     # in order to ensure it is NBA games, we use the SELECT feature to select a specific value in the league dropdown (avoids g league etc.)
@@ -65,10 +69,17 @@ def iterate_single_gameday(season_string, url, df):
 
     # above was resolved, was an issue with my understanding of the HTML DOM elements. This remains as a tutorial if necessary for future work
     
-        
-    l = browser.find_element_by_xpath("//a[contains(@ng-href, 'box-score')]").text
+    # simplistic wait for page to render. Otherwise, links not visible (table has to populate) 
+    # TODO: improve sleep mechanism to be dynamic similar to the above to cut down wasted time
+    sleep(5)
 
-    print(l)
+    interactive_box_score_elements = browser.find_elements_by_partial_link_text("Interactive Box Score")
+
+    for elem in interactive_box_score_elements:
+        link = elem.get_attribute('href')
+        game_urls.append(link)
+    return game_urls
+    
 
 df = pd.DataFrame()
 iterate_single_season('2011-12', df)

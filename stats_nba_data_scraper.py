@@ -38,12 +38,19 @@ def iterate_single_season(season_string, df):
 
         # business logic happens here
         game_urls = get_single_gameday_urls(season_string, url, game_urls)
-        print(game_urls)
-        break
-        
 
         # increment the day
         curr_date += timedelta(days = 1)
+
+    # now we have a list of all the game URLs for an entire season
+    # we want to go through these games and populate 2 data entries per game (winning team, losing team)
+    # once the dataframe is fully populated, we are done iterating through an entire season. So we can return the df
+
+    for url in game_urls:
+        df = analyze_single_game_url(season_string, url, df)
+
+    return df
+
 
 # preconditions
 # url is valid, add check in iterate_single_season
@@ -79,6 +86,11 @@ def get_single_gameday_urls(season_string, url, game_urls):
         link = elem.get_attribute('href')
         game_urls.append(link)
     return game_urls
+
+def analyze_single_game_url(season_string, url, df):
+    # TODO: implement me !
+
+    pass
     
 
 df = pd.DataFrame()

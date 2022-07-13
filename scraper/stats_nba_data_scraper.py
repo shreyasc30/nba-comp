@@ -38,7 +38,7 @@ def iterate_single_season(season_string, df):
         url = CONST_URL + curr_date.strftime('%m') + "%2F" + curr_date.strftime('%d') + "%2F" + curr_date.strftime('%Y')
 
         # business logic happens here
-        game_urls = get_single_gameday_urls(season_string, url, game_urls)
+        game_urls = get_single_gameday_urls(season_string, url, game_urls, curr_date)
 
         # increment the day
         curr_date += timedelta(days = 1)
@@ -48,9 +48,9 @@ def iterate_single_season(season_string, df):
     # once the dataframe is fully populated, we are done iterating through an entire season. So we can return the df
 
     missing_ = []
-    for url in game_urls:
+    for (url, date) in game_urls:
         # print(url)
-        (errcode, df) = analyze_single_game_url(season_string, url, df, 5)
+        (errcode, df) = analyze_single_game_url(season_string, url, df, date, 5)
         # remove all star game
         if errcode != 1 and not (("est" in url) and ("wst" in url)):
             missing_.append((errcode, url))
@@ -59,7 +59,7 @@ def iterate_single_season(season_string, df):
     new_missing = []
     while (len(missing_) > 0):
         for entry in missing_:
-            (errcode, df) = analyze_single_game_url(season_string, entry[1], df, start_wait)
+            (errcode, df) = analyze_single_game_url(season_string, entry[1], df, date, start_wait)
             if errcode != 1:
                 new_missing.append((errcode, entry[1]))
         missing_ = new_missing
@@ -82,7 +82,7 @@ def iterate_single_season(season_string, df):
 # df is dataframe to which we want to add each data entry
 # single gameday refers to a single date
 
-def get_single_gameday_urls(season_string, url, game_urls):
+def get_single_gameday_urls(season_string, url, game_urls, curr_date):
     browser.get(url)
     # nba table is always before G league table on the page
     # in order to ensure it is NBA games, we use the SELECT feature to select a specific value in the league dropdown (avoids g league etc.)
@@ -113,10 +113,10 @@ def get_single_gameday_urls(season_string, url, game_urls):
     for elem in interactive_box_score_elements:
         link = elem.get_attribute('href')
         if "gleague" not in link:
-            game_urls.append(link)
+            game_urls.append(link, curr_date)
     return game_urls
 
-def analyze_single_game_url(season_string, url, df, wait_time):
+def analyze_single_game_url(season_string, url, df, date, wait_time):
     # TODO: implement me !
     browser.get(url)
 
@@ -179,6 +179,12 @@ def analyze_single_game_url(season_string, url, df, wait_time):
     away_totals_only = away_team_data_dump[away_totals_found:].split()
     home_totals_only[0], away_totals_only[0] = home_team_name, away_team_name
 
+    home_totals_only.append(season_string)
+    home_totals_only.append(date)
+    away_totals_only.append(season_string)
+    away_totals_only.append(date)
+
+
     # print(away_team_data_dump)
     #print(away_totals_only)
 
@@ -194,7 +200,7 @@ def analyze_single_game_url(season_string, url, df, wait_time):
     
     
 urls = get_single_gameday_urls('2011-12', 'https://www.nba.com/stats/gamebooks/?Date=12%2F29%2F2011', [])
-df = pd.DataFrame(columns=["name", "fgm", "fga", "fgperc", "3pm", "3pa", "3pperc", "ftm", "fta", "ftperc", "oreb", "dreb", "reb", "asst", "stl", "block", "to", "fouls", "pts", "plus-minus"])
+df = pd.DataFrame(columns=["name", "fgm", "fga", "fgperc", "3pm", "3pa", "3pperc", "ftm", "fta", "ftperc", "oreb", "dreb", "reb", "asst", "stl", "block", "to", "fouls", "pts", "plus-minus", "season", "date"])
 df = iterate_single_season('2011-12', df)
 
 # for url in urls:

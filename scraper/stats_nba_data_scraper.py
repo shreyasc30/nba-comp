@@ -201,11 +201,14 @@ def analyze_single_game_url(season_string, url, df, date, wait_time):
     
 urls = get_single_gameday_urls('2011-12', 'https://www.nba.com/stats/gamebooks/?Date=12%2F29%2F2011', [])
 df = pd.DataFrame(columns=["name", "fgm", "fga", "fgperc", "3pm", "3pa", "3pperc", "ftm", "fta", "ftperc", "oreb", "dreb", "reb", "asst", "stl", "block", "to", "fouls", "pts", "plus-minus", "season", "date"])
-df = iterate_single_season('2011-12', df)
+
+for season_name in SEASON_START_END_DATES.keys():    
+    df = iterate_single_season(season_name, df)
+    df.to_csv(season_name + "_NBA_season_team_game_data.csv")
+    df = df.head(0)
 
 # for url in urls:
 #     df = analyze_single_game_url('2011-12', url, df)
 
-print(df.head())
 
 # analyze_single_game_url('2011-12', 'https://www.nba.com/game/cle-vs-uta-0021100139/box-score', df)

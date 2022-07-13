@@ -50,14 +50,30 @@ def iterate_single_season(season_string, df):
     missing_ = []
     for url in game_urls:
         # print(url)
-        (errcode, df) = analyze_single_game_url(season_string, url, df)
-        if errcode != 1:
+        (errcode, df) = analyze_single_game_url(season_string, url, df, 5)
+        # remove all star game
+        if errcode != 1 and not (("est" in url) and ("wst" in url)):
             missing_.append((errcode, url))
     
+    start_wait = 10
+    new_missing = []
+    while (len(missing_) > 0):
+        for entry in missing_:
+            (errcode, df) = analyze_single_game_url(season_string, entry[1], df, start_wait)
+            if errcode != 1:
+                new_missing.append((errcode, entry[1]))
+        missing_ = new_missing
+        start_wait += 5
+
+        if start_wait == 60:
+            print("Waited 60 seconds for " + entry[1] + " and no luck")
+            return (-5, df)
+                
+
     print(missing_)
     with open('missing.txt', 'w') as f:
         for item in missing_:
-            f.write("%s\n" % item)
+            f.write(item + "\n")
     return df
 
 
@@ -100,13 +116,13 @@ def get_single_gameday_urls(season_string, url, game_urls):
             game_urls.append(link)
     return game_urls
 
-def analyze_single_game_url(season_string, url, df):
+def analyze_single_game_url(season_string, url, df, wait_time):
     # TODO: implement me !
     browser.get(url)
 
     print(url)
     # simplistic sleep because of intermittent error -- find a way too streamline this process
-    sleep(5)
+    sleep(wait_time)
     try :
         two_tables_parent = browser.find_elements_by_class_name(name="MaxWidthContainer_mwc__2OXc5")[1]
 
@@ -141,7 +157,10 @@ def analyze_single_game_url(season_string, url, df):
             print("Could not find away team name, example skipped: " + url)
             return (-2, df)
         away_team_idx += 1
-        away_team_data_dump = team_names_player_names_data[away_team_idx].text
+        try:
+            away_team_data_dump = team_names_player_names_data[away_team_idx].text
+        except(IndexError):
+            return (-4, df)
 
 
     # for tnpnd in team_names_player_names_data:

@@ -7,6 +7,8 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from selenium.common.exceptions import TimeoutException
+
 from CONST_season_start_end_dates import SEASON_START_END_DATES
 from CONST_team_names_since_2011 import TEAM_NAMES
 
@@ -58,16 +60,16 @@ def iterate_single_season(season_string, df):
     start_wait = 10
     new_missing = []
     while (len(missing_) > 0):
-        for entry in missing_:
+        while start_wait <= 60:
+            entry = missing_[0]
             (errcode, df) = analyze_single_game_url(season_string, entry[1], df, date, start_wait)
             if errcode != 1:
                 new_missing.append((errcode, entry[1]))
+            start_wait += 5
         missing_ = new_missing
-        start_wait += 5
-
-        if start_wait == 60:
+        if start_wait > 60:
             print("Waited 60 seconds for " + entry[1] + " and no luck")
-            return (-5, df)
+            missing_ = missing_[1:]
                 
 
     print(missing_)
@@ -113,12 +115,15 @@ def get_single_gameday_urls(season_string, url, game_urls, curr_date):
     for elem in interactive_box_score_elements:
         link = elem.get_attribute('href')
         if "gleague" not in link:
-            game_urls.append(link, curr_date)
+            game_urls.append((link, curr_date))
     return game_urls
 
 def analyze_single_game_url(season_string, url, df, date, wait_time):
     # TODO: implement me !
-    browser.get(url)
+    try :
+        browser.get(url)
+    except (TimeoutException):
+        return ((-1, df))
 
     print(url)
     # simplistic sleep because of intermittent error -- find a way too streamline this process
@@ -199,7 +204,7 @@ def analyze_single_game_url(season_string, url, df, date, wait_time):
 
     
     
-urls = get_single_gameday_urls('2011-12', 'https://www.nba.com/stats/gamebooks/?Date=12%2F29%2F2011', [])
+
 df = pd.DataFrame(columns=["name", "fgm", "fga", "fgperc", "3pm", "3pa", "3pperc", "ftm", "fta", "ftperc", "oreb", "dreb", "reb", "asst", "stl", "block", "to", "fouls", "pts", "plus-minus", "season", "date"])
 
 for season_name in SEASON_START_END_DATES.keys():    
